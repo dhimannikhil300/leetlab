@@ -1,0 +1,66 @@
+# Node.js dependencies
+node_modules/
+
+# Build files
+build/
+dist/
+*.log
+npm-debug.log*
+
+# Environment variables
+.env
+
+# Prisma
+/prisma/.env
+/prisma/schema.prisma
+/prisma/migration
+
+# IDE files
+.vscode/
+.idea/
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Windows
+Thumbs.db
+Desktop.ini
+
+# System files
+*.cache
+*.DS_Store?
+*.DS_Store
+*.log*
+*.npm
+*.nyc_output
+*.suo
+*.swp
+*.tgz
+*.tmp
+*.vspscc
+*.vspx
+*.zip
+.env
+.nyc_output/
+
+# Misc
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# Yarn
+.yarn/*
+!.yarn/releases
+!.yarn/plugins
+!.yarn/sdks
+!.yarn/versions
+
+# Next.js
+.next/
+out/
