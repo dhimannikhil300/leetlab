@@ -40,6 +40,7 @@ export const register = async (req, res) => {
         })
 
         res.status(201).json({
+            success: true,
             message: "User created successfully",
             user: {
                 id: newUser.id,
@@ -57,8 +58,105 @@ export const register = async (req, res) => {
     }
 }
 
-export const login = async (req, res) => {}
+export const login = async (req, res) => {
+    const {email, password} = req.body;
+    try {
+        const user = await db.user.findUnique({
+            where: {
+                email,
+            }
+        })
 
-export const logout = async (req, res) => {}
+        if(!user){
+            return res.status(401).json({
+                error: "User not found",
+            })
+        }
+
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if(!isMatch){
+            return res.status(401).json({
+                error: "Invalid credentials",
+            })
+        }
+
+        const token = jwt.sign({id: user.id}, process.env.JWT_SECRET, {expiresIn: '7d'});
+
+        res.cookie('jwt', token, {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV !== 'development',
+            maxAge: 1000 * 60 * 60 * 24 * 7,
+        })
+
+        res.status(200).json({
+            success: true,
+            message: "User Login successfully",
+            user: {
+                id: user.id,
+                email: user.email,
+                name: user.name,
+                role: user.role,
+                image: user.image,
+            }
+        })
+    } catch (error) {
+        console.error("Error login in user: ", error);
+        res.status(500).json({
+            error: "Error in login user"
+        })
+    }
+}
+
+export const logout = async (req, res) => {
+    try {
+        res.clearCookie("jwt", {
+            httpOnly: true,
+            sameSite: "strict",
+            secure: process.env.NODE_ENV !== 'development',
+        })
+
+        res.status(200).json({
+            success: true,
+            message: "User logged out successfully",
+        })
+    } catch (error) {
+        console.error("Error logout in user: ", error);
+        res.status(500).json({
+            error: "Error in logout user"
+        })
+    }
+}
 
 export const check = async (req, res) => {}
+
+export const getAllProblemsSolvedByUser = async (req, res) => {
+    try {
+        const problems = await db.problems.findMany({
+            where: {
+                solvedBy: {
+                    some: {
+                        userId: req.user.id
+                    }
+                }
+            },
+            include: {
+                solvedBy: {
+                    where: {
+                        userId: req.user.id
+                    }
+                }
+            }
+        })
+
+        res.status(200).json({
+            success: true,
+            message: "Problems fetched successfully",
+            problems
+        })
+    } catch (error) {
+        console.error("Error fetching problems: ", error);
+        res.status(500).json({error: "Falied to fetch problems"})
+    }
+}
